@@ -68,3 +68,27 @@ for b in range(batch_size):
         context = xb[b, :t+1]
         target = yb[b, t]
         print(f"when input is {context.tolist()} output is: {target}")
+
+import torch.nn as nn
+from torch.nn import functional as F
+torch.manual_seed(1337)
+class BigramLanguageModel(nn.Module):
+
+    def __init__(self, vocab_size):
+        super().__init__()
+
+        self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
+
+    def forward(self, idx, target):
+        logits = self.token_embedding_table(idx) #(B,T,C)
+
+        B, T, C = logits.shape
+        logits = logits.view(B*T, C)
+        target = target.view(B*T)
+        loss = F.cross_entropy(logits, target)
+        return logits, loss
+
+m = BigramLanguageModel(vocab_size)
+logits, loss = m(xb, yb)
+print(logits.shape)
+print(loss)
